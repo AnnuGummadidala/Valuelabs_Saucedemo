@@ -8,7 +8,7 @@
     "test:local": "npm run clean:allure && cross-env TEST_ENV=local playwright test && npm run allure:post",
     "test:staging": "npm run clean:allure && cross-env TEST_ENV=stage playwright test && npm run allure:post",
     "test:prod": "npm run clean:allure && cross-env TEST_ENV=prod playwright test && npm run allure:post",
-    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:generate": "allure generate allure-results --single-file --clean -o allure-report",
     "allure:open": "allure open allure-report",
     "allure:post": "npm run allure:generate && node ./scripts/openAllure.js"
   },
