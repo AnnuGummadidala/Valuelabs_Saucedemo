@@ -22,8 +22,8 @@ PROJECT SETUP
 
 Clone Project
 
-git clone <repository-url>
-cd <project-folder>
+git clone [<repository-url>](https://github.com/AnnuGummadidala/Valuelabs_Saucedemo)
+
 
 --------------------------------------------------
 
