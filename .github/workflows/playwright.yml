@@ -1,0 +1,96 @@
+name: Playwright Automation Tests
+
+on:
+  push:
+    branches:
+      - main
+      - stage
+      - prod
+
+  pull_request:
+    branches:
+      - main
+      - stage
+      - prod
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment'
+        required: true
+        default: 'local'
+        type: choice
+        options:
+          - local
+          - stage
+          - prod
+
+jobs:
+  playwright-tests:
+    name: Run Playwright Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/2, 2/2]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve test environment
+        id: resolve-env
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "selected_env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            echo "selected_env=local" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "stage" ]; then
+            echo "selected_env=stage" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "prod" ]; then
+            echo "selected_env=prod" >> $GITHUB_OUTPUT
+          else
+            echo "selected_env=local" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Print selected environment
+        run: echo "Running tests on ${{ steps.resolve-env.outputs.selected_env }} environment"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run local tests
+        if: ${{ steps.resolve-env.outputs.selected_env == 'local' }}
+        run: npm run test:local -- --shard=${{ matrix.shard }}
+
+      - name: Run stage tests
+        if: ${{ steps.resolve-env.outputs.selected_env == 'stage' }}
+        run: npm run test:staging -- --shard=${{ matrix.shard }}
+
+      - name: Run prod tests
+        if: ${{ steps.resolve-env.outputs.selected_env == 'prod' }}
+        run: npm run test:prod -- --shard=${{ matrix.shard }}
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ steps.resolve-env.outputs.selected_env }}-${{ matrix.shard }}
+          path: allure-report/
+
+      - name: Upload Playwright results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-${{ steps.resolve-env.outputs.selected_env }}-${{ matrix.shard }}
+          path: test-results/
