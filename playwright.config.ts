@@ -36,7 +36,8 @@ export default defineConfig({
     // baseURL: 'http://localhost:3000',
     baseURL: envConfig.baseURL,
 
-    headless: false,
+    //headless: false,
+    headless: process.env.CI ? true : false,
 
   
 
