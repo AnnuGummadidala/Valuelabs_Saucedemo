@@ -85,12 +85,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-${{ steps.resolve-env.outputs.selected_env }}-${{ matrix.shard }}
+          name: allure-report-${{ steps.resolve-env.outputs.selected_env }}-${{ strategy.job-index }}
           path: allure-report/
 
       - name: Upload Playwright results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-results-${{ steps.resolve-env.outputs.selected_env }}-${{ matrix.shard }}
+          name: playwright-results-${{ steps.resolve-env.outputs.selected_env }}-${{ strategy.job-index }}
           path: test-results/
